@@ -96,6 +96,13 @@ app.post("/urls/:id/delete", (req, res) => {
     res.redirect(`http://localhost:8080/urls`);
 });
 
+/* Assigns a cookie to a username when username is entered */
+app.post("/login", (req, res) => {
+    res.cookie("username", req.body.username);
+    //console.log("cookies: " + req.cookies);
+    
+})
+
 //prints HTML when you type /hello
 app.get("/hello", (req, res) => {
     res.end("<html><body>Hello <b>World</b></body></html>\n");
