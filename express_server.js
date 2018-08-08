@@ -72,6 +72,8 @@ app.post("/urls", (req, res) => {
     res.redirect(`http://localhost:8080/urls/${generated}`);
 });
 
+/* Redirects user to the short URLs page when they click
+   the edit button on /urls.*/
 app.post("/urls/:id", (req,res) => {
     let short = req.params.id;
     res.redirect(`http://localhost:8080/urls/${short}`);
@@ -93,7 +95,7 @@ app.post("/urls/:id/delete", (req, res) => {
     res.redirect(`http://localhost:8080/urls`);
 });
 
-//prints HTML when you type /hello
+//prints HTML when you type /hello in browser
 app.get("/hello", (req, res) => {
     res.end("<html><body>Hello <b>World</b></body></html>\n");
 });
