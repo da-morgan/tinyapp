@@ -30,9 +30,12 @@ app.get("/urls.json", (req, res) => {
     res.json(urlDatabase);
 });
 
-/* Displays list of URLs currently in the urlDatabas object. */
+/* Displays list of URLs currently in the urlDatabase object. */
 app.get("/urls", (req, res) => {
-    let templateVars = {urls: urlDatabase};
+    let templateVars = {
+        urls: urlDatabase,
+        username: req.cookies["username"]
+    };
     res.render('urls_index', templateVars);
 })
 
@@ -46,7 +49,8 @@ app.get("/urls/new", (req, res) => {
 app.get("/urls/:id", (req, res) => {
     let templateVars = {
         shortURLS: req.params.id,
-        longURLS: urlDatabase[req.params.id]
+        longURLS: urlDatabase[req.params.id],
+        username: req.cookies["username"]
     };
     res.render('urls_show', templateVars);
 })
@@ -100,6 +104,7 @@ app.post("/urls/:id/delete", (req, res) => {
 app.post("/login", (req, res) => {
     res.cookie("username", req.body.username);
     //console.log("cookies: " + req.cookies);
+    res.redirect(`http://localhost:8080/urls`);
     
 })
 
