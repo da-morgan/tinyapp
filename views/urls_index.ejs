@@ -9,14 +9,15 @@
     <ul>
         <% for(url in urls){ %>
             <li>
-                <form method="POST" action="/urls/<%= url %>/delete">
+                <form method="POST">
                 <%= url %>: <%= urls[url] %>  
-                <input type="submit" value = "Delete">
+                <input type="submit" value = "Delete" formaction="/urls/<%= url %>/delete">
+                <input type = "submit" value = "Edit" formaction="/urls/<%= url %>">
                 </form>
             </li>
         <% } %>
     </ul>
-    <a href="/urls/new">Shorten another URL</a></href>
+    <a href="/urls/new">Shorten A URL</a></href>
 </body>
 
 </html>

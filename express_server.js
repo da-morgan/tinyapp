@@ -72,8 +72,20 @@ app.post("/urls", (req, res) => {
     res.redirect(`http://localhost:8080/urls/${generated}`);
 });
 
+app.post("/urls/:id", (req,res) => {
+    let short = req.params.id;
+    res.redirect(`http://localhost:8080/urls/${short}`);
+});
+
+/* Updates the long url assigned to a short URL 
+   Redirects user to the urls page*/
+app.post("/urls/:id/update", (req, res) => {
+    urlDatabase[req.params.id] = req.body.LongURL;
+    res.redirect(`http://localhost:8080/urls`);
+});
+
 /* When delete button is pushed in the browser
-   removes the link from the urlDB object and updates HTML*/
+   removes the link from the urlDB object and updates HTML`*/
 app.post("/urls/:id/delete", (req, res) => {
     delete urlDatabase[req.params.id]
     console.log(urlDatabase);
