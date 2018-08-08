@@ -22,12 +22,12 @@ var urlDatabase = {
     "9sm5xK": "http://www.google.com",
 }
 
-/* prints Database of URLs in the browser */
+/* prints Database of URLs in the browser as JSON object. */
 app.get("/urls.json", (req, res) => {
     res.json(urlDatabase);
 });
 
-/* Displays lit of URLs currently in the urlDatabas object. */
+/* Displays list of URLs currently in the urlDatabas object. */
 app.get("/urls", (req, res) => {
     let templateVars = {urls: urlDatabase};
     res.render('urls_index', templateVars);
@@ -70,6 +70,13 @@ app.post("/urls", (req, res) => {
     //console.log('req.body.longURL: ' + req.body.longURL);
     res.statusCode = 303
     res.redirect(`http://localhost:8080/urls/${generated}`);
+});
+
+app.post("/urls/:id/delete", (req, res) => {
+    delete urlDatabase[req.params.id]
+    console.log(urlDatabase);
+    //urlDatabase[req.params]
+    res.redirect(`http://localhost:8080/urls`);
 });
 
 //prints HTML when you type /hello
