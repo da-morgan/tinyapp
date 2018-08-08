@@ -1,5 +1,7 @@
 var express = require('express');
+const bodyParser = require("body-parser");
 var app = express();
+app.use(bodyParser.urlencoded({extended: true}));
 var PORT = 8080;
 
 app.set("view engine", "ejs");
@@ -17,6 +19,10 @@ app.get("/urls", (req, res) => {
     let templateVars = {urls: urlDatabase};
     res.render('urls_index', templateVars);
 })
+
+app.get("/urls/new", (req, res) => {
+    res.render("urls_new");
+});
 
 app.get("/urls/:id", (req, res) => {
     let templateVars = {
