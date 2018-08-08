@@ -72,6 +72,8 @@ app.post("/urls", (req, res) => {
     res.redirect(`http://localhost:8080/urls/${generated}`);
 });
 
+/* When delete button is pushed in the browser
+   removes the link from the urlDB object and updates HTML*/
 app.post("/urls/:id/delete", (req, res) => {
     delete urlDatabase[req.params.id]
     console.log(urlDatabase);
