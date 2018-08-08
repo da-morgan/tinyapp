@@ -6,6 +6,16 @@ var PORT = 8080;
 
 app.set("view engine", "ejs");
 
+//Generates a random string given a length input when function is called.
+function generateRandomString(length) {
+    var options = 'abcdefghijklmnopqrstuvwxyz0123456789';
+    var result = '';
+      for (var i = 0; i < length; i++){
+        result += chars[Math.floor(Math.random() * chars.length)];
+      }
+    return result;
+}
+
 var urlDatabase = {
     "b2xVn2": "http://www.lighthouselabs.ca",
     "9sm5xK": "http://www.google.com"
@@ -31,6 +41,11 @@ app.get("/urls/:id", (req, res) => {
     };
     res.render('urls_show', templateVars);
 })
+
+app.post("/urls", (req, res) => {
+    console.log(req.body);  // debug statement to see POST parameters
+    res.send("Ok");         // Respond with 'Ok' (we will replace this)
+});
 
 app.get("/hello", (req, res) => {
     res.end("<html><body>Hello <b>World</b></body></html>\n");
