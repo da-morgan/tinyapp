@@ -42,6 +42,9 @@ app.get("/urls/:id", (req, res) => {
     res.render('urls_show', templateVars);
 })
 
+/* Given a domain input from /urls/new, generates a short url string 
+   and redirects the user to the urls/new page. Displays the original
+   domain and the newly generated string URL.*/
 app.post("/urls", (req, res) => {
     let generated = generateRandomString(6);
     //console.log(req.body);  // debug statement to see POST parameters
