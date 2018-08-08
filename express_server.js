@@ -11,14 +11,14 @@ function generateRandomString(length) {
     var options = 'abcdefghijklmnopqrstuvwxyz0123456789';
     var result = '';
       for (var i = 0; i < length; i++){
-        result += chars[Math.floor(Math.random() * chars.length)];
+        result += options[Math.floor(Math.random() * options.length)];
       }
     return result;
 }
 
 var urlDatabase = {
     "b2xVn2": "http://www.lighthouselabs.ca",
-    "9sm5xK": "http://www.google.com"
+    "9sm5xK": "http://www.google.com",
 }
 
 app.get("/urls.json", (req, res) => {
@@ -43,8 +43,13 @@ app.get("/urls/:id", (req, res) => {
 })
 
 app.post("/urls", (req, res) => {
-    console.log(req.body);  // debug statement to see POST parameters
-    res.send("Ok");         // Respond with 'Ok' (we will replace this)
+    let generated = generateRandomString(6);
+    //console.log(req.body);  // debug statement to see POST parameters
+    urlDatabase[generated] = req.body.longURL;
+    //console.log('string: ' + generated);
+    //console.log(urlDatabase);
+    //console.log('req.body.longURL: ' + req.body.longURL);
+    res.redirect(`http://localhost:8080/urls/${generated}`);
 });
 
 app.get("/hello", (req, res) => {
