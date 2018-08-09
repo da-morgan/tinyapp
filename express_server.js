@@ -102,9 +102,6 @@ app.post("/urls/:id/delete", (req, res) => {
     res.redirect(`http://localhost:8080/urls`);
 });
 
-<<<<<<< HEAD
-//prints HTML when you type /hello in browser
-=======
 /* Assigns a cookie to a username when username is entered */
 app.post("/login", (req, res) => {
     res.cookie("username", req.body.username);
@@ -113,13 +110,14 @@ app.post("/login", (req, res) => {
     
 })
 
+/* Deletes cookie when logout button pushed
+   Redirects user to the urls page */
 app.post("/logout", (req, res) => {
    res.clearCookie('username');
    res.redirect(`http://localhost:8080/urls`);
 })
 
 //prints HTML when you type /hello
->>>>>>> feature/cookies
 app.get("/hello", (req, res) => {
     res.end("<html><body>Hello <b>World</b></body></html>\n");
 });
