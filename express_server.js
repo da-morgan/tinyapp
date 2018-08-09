@@ -108,6 +108,11 @@ app.post("/login", (req, res) => {
     
 })
 
+app.post("/logout", (req, res) => {
+   res.clearCookie('username');
+   res.redirect(`http://localhost:8080/urls`);
+})
+
 //prints HTML when you type /hello
 app.get("/hello", (req, res) => {
     res.end("<html><body>Hello <b>World</b></body></html>\n");
