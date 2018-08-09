@@ -118,6 +118,20 @@ app.post("/logout", (req, res) => {
    res.redirect(`http://localhost:8080/urls`);
 })
 
+app.get("/register", (req, res) => {
+    let templateVars = {
+        username: req.cookies["username"]
+    };
+    res.render('register', templateVars);
+});
+
+app.post("/register", (req, res) => {
+    let em = req.body.email;
+    let pw = req.body.password;
+
+    res.redirect("/urls");
+});
+
 //prints HTML when you type /hello
 app.get("/hello", (req, res) => {
     res.end("<html><body>Hello <b>World</b></body></html>\n");
