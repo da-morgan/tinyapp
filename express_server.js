@@ -19,6 +19,20 @@ function generateRandomString(length) {
     return result;
 }
 
+function objectSearcher(object, objValue, userValue){
+    let valueChecker = false;
+    var arr = Object.keys(object);
+    console.log("arr: " + arr);
+    console.log("user value: " + userValue); 
+    for(var i = 0; i < arr.length; i++){
+      console.log("obj value: " + object[arr[i]].objValue)
+      if(object[arr[i]][objValue] === userValue){
+        valueChecker = true;
+      }
+    }
+    return valueChecker; 
+}
+
 //database of URLs
 const urlDatabase = {
     "b2xVn2": "http://www.lighthouselabs.ca",
@@ -36,7 +50,7 @@ const users = {
       email: "user2@example.com", 
       password: "dishwasher-funk"
     }
-  }
+}
 
 /* prints Database of URLs in the browser as JSON object. */
 app.get("/urls.json", (req, res) => {
@@ -145,6 +159,16 @@ app.post("/register", (req, res) => {
     let em = req.body.email;
     let pw = req.body.password;
     let newId = generateRandomString(7);
+
+    if(em === ''){
+        res.sendStatus = 400;
+        res.redirect("http://localhost:8080/register");
+    }
+    if(objectSearcher(users, "email", em)){
+        res.sendStatus = 400;
+        res.redirect("http://localhost:8080/register");
+    }
+
 
     console.log("newID: " + newId);
     const newObj = {
