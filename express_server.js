@@ -18,20 +18,35 @@ function generateRandomString(length) {
       }
     return result;
 }
-
+/* searches an object for values attached to anonymous keys.
+   takes in an object, the value being searched for and the 
+   value the user is passing in. */
 function objectSearcher(object, objValue, userValue){
     let valueChecker = false;
     var arr = Object.keys(object);
     console.log("arr: " + arr);
     console.log("user value: " + userValue); 
     for(var i = 0; i < arr.length; i++){
-      console.log("obj value: " + object[arr[i]].objValue)
       if(object[arr[i]][objValue] === userValue){
         valueChecker = true;
       }
     }
-    return valueChecker; 
+    return valueChecker;
 }
+
+/* given an email and password, returns the 
+   UserID attached to those credentials. */
+function idGrabber(object, em, pw){
+    let id;
+    var arr = Object.keys(object);
+    console.log("arr: " + arr); 
+    for(var i = 0; i < arr.length; i++){
+      if(object[arr[i]].email === em && object[arr[i]].password === pw){
+        id = arr[i];
+      }
+    }
+    return id; 
+  }
 
 //database of URLs
 const urlDatabase = {
@@ -46,7 +61,7 @@ const users = {
       password: "purple-monkey-dinosaur"
     },
    "456": {
-      id: "456", 
+      id: "456",  
       email: "user2@example.com", 
       password: "dishwasher-funk"
     }
@@ -61,14 +76,18 @@ app.get("/urls.json", (req, res) => {
 app.get("/urls", (req, res) => {
     let templateVars = {
         urls: urlDatabase,
-        username: req.cookies["username"]
+        users: users,
+        cookie: req.cookies["user_id"]
     };
-    res.render('urls_index', templateVars);
+    res.render("urls_index", templateVars);
 })
 
 /* Takes user to the form to input a domain */
 app.get("/urls/new", (req, res) => {
-    let templateVars ={username: req.cookies["username"]};
+    let templateVars ={
+        users: users,
+        cookie: req.cookies["user_id"]
+    };
     res.render("urls_new", templateVars);
 });
 
@@ -78,7 +97,8 @@ app.get("/urls/:id", (req, res) => {
     let templateVars = {
         shortURLS: req.params.id,
         longURLS: urlDatabase[req.params.id],
-        username: req.cookies["username"]
+        users: users,
+        cookie: req.cookies["user_id"]
     };
     res.render('urls_show', templateVars);
 })
@@ -104,21 +124,21 @@ app.post("/urls", (req, res) => {
     //console.log(urlDatabase);
     //console.log('req.body.longURL: ' + req.body.longURL);
     res.statusCode = 303
-    res.redirect(`http://localhost:8080/urls/${generated}`);
+    res.redirect(`/urls/${generated}`);
 });
 
 /* Redirects user to the short URLs page when they click
    the edit button on /urls.*/
 app.post("/urls/:id", (req,res) => {
     let short = req.params.id;
-    res.redirect(`http://localhost:8080/urls/${short}`);
+    res.redirect(`/urls/${short}`);
 });
 
 /* Updates the long url assigned to a short URL 
    Redirects user to the urls page*/
 app.post("/urls/:id/update", (req, res) => {
     urlDatabase[req.params.id] = req.body.LongURL;
-    res.redirect(`http://localhost:8080/urls`);
+    res.redirect(`/urls`);
 });
 
 /* When delete button is pushed in the browser
@@ -127,27 +147,46 @@ app.post("/urls/:id/delete", (req, res) => {
     delete urlDatabase[req.params.id]
     console.log(urlDatabase);
     //urlDatabase[req.params]
-    res.redirect(`http://localhost:8080/urls`);
+    res.redirect(`/urls`);
 });
 
-/* Assigns a cookie to a username when username is entered */
+app.get("/login", (req, res) => {
+    let templateVars = {
+        users: users,
+        cookie: req.cookies["user_id"]
+    };
+    res.render('login', templateVars);
+});
+
+/* Assigns a cookie to a userID when credentials are entered */
 app.post("/login", (req, res) => {
-    res.cookie("username", req.body.username);
-    //console.log("cookies: " + req.cookies);
-    res.redirect(`http://localhost:8080/urls`);
+    let em = req.body.email;
+    let pw = req.body.password;
+    let id = idGrabber(users, em, pw);
+
+    if(id){
+        res.cookie("user_id", id);
+        res.redirect("/urls");
+    } else {
+        res.sendStatus = 403;
+        res.redirect("/login");
+    }
+
+    
     
 })
 
 /* Deletes cookie when logout button pushed
    Redirects user to the urls page */
 app.post("/logout", (req, res) => {
-   res.clearCookie('username');
-   res.redirect(`http://localhost:8080/urls`);
+   res.clearCookie("user_id");
+   res.redirect("/urls");
 })
 /* Shows the register page when url is enters */
 app.get("/register", (req, res) => {
     let templateVars = {
-        username: req.cookies["username"]
+        users: users,
+        cookie: req.cookies["user_id"]
     };
     res.render('register', templateVars);
 });
@@ -162,11 +201,11 @@ app.post("/register", (req, res) => {
 
     if(em === ''){
         res.sendStatus = 400;
-        res.redirect("http://localhost:8080/register");
+        res.redirect("/register");
     }
     if(objectSearcher(users, "email", em)){
         res.sendStatus = 400;
-        res.redirect("http://localhost:8080/register");
+        res.redirect("/register");
     }
 
 
@@ -179,7 +218,7 @@ app.post("/register", (req, res) => {
 
     users[newId] = newObj;
     console.log(users);
-    res.cookie("id", newId);
+    req.cookie("user_id", newId);
     res.redirect("/urls");
 });
 

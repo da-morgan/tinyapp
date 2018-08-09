@@ -2,13 +2,13 @@
 
 <h3>  
     <form method="POST"> 
-        <% if(username) { %>
-            Welcome, <%= username %> 
+        <% if(cookie) { %>
             <input type = "submit" value = "logout" formaction="/logout">
         <% } else { %>
             Login: 
-            <input type = "text" name = "username">
             <input type = "submit" value = "login" formaction="/login">
+            Register: 
+            <input type = "submit" value = "register" formaction="/register">
         <% } %>
     </form>
 </h3>
