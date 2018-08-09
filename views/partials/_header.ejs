@@ -1,14 +1,10 @@
 <h1>Welcome to TinyApp</h1>
 
 <h3>  
-    <form method="POST"> 
         <% if(cookie) { %>
-            <input type = "submit" value = "logout" formaction="/logout">
+            <button><a href = "/logout">Logout</a></button>
         <% } else { %>
-            Login: 
-            <input type = "submit" value = "login" formaction="/login">
-            Register: 
-            <input type = "submit" value = "register" formaction="/register">
+            <button><a href = "/login">Login</a></button>
+            <button><a href = "/register">Register</a></button>
         <% } %>
-    </form>
 </h3>
