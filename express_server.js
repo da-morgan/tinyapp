@@ -46,12 +46,20 @@ function idGrabber(object, em, pw){
       }
     }
     return id; 
-  }
+}
 
 //database of URLs
 const urlDatabase = {
-    "b2xVn2": "http://www.lighthouselabs.ca",
-    "9sm5xK": "http://www.google.com",
+    "b2xVn2": {
+        ShortURL: "b2xVn2",
+        LongURL: "http://www.lighthouselabs.ca",
+        UserID: "123"
+    },
+    "9sm5xK": {
+        ShortURL: "9sm5xK",
+        LongURL: "http://www.google.com",
+        UserID: "456"
+    }
 }
 
 const users = { 
@@ -88,19 +96,29 @@ app.get("/urls/new", (req, res) => {
         users: users,
         cookie: req.cookies["user_id"]
     };
-    res.render("urls_new", templateVars);
+
+    if(req.cookies["user_id"]){
+        res.render("urls_new", templateVars);
+    } else {
+        res.redirect("/login");
+    }
 });
 
 /* Displays info about long and short URLS given
    input of short URL.*/
 app.get("/urls/:id", (req, res) => {
-    let templateVars = {
-        shortURLS: req.params.id,
-        longURLS: urlDatabase[req.params.id],
-        users: users,
-        cookie: req.cookies["user_id"]
-    };
-    res.render('urls_show', templateVars);
+    if(req.cookies["user_id"] === urlDatabase[req.params.id].UserID){
+        let templateVars = {
+            shortURLS: req.params.id,
+            longURLS: urlDatabase[req.params.id],
+            users: users,
+            cookie: req.cookies["user_id"]
+        };
+        res.render("urls_show", templateVars);
+    } else {
+        res.sendStatus = 403;
+        res.redirect("/urls");
+    }
 })
 
 
@@ -144,10 +162,15 @@ app.post("/urls/:id/update", (req, res) => {
 /* When delete button is pushed in the browser
    removes the link from the urlDB object and updates HTML`*/
 app.post("/urls/:id/delete", (req, res) => {
-    delete urlDatabase[req.params.id]
-    console.log(urlDatabase);
-    //urlDatabase[req.params]
-    res.redirect(`/urls`);
+    if(req.cookies["user_id"] === urlDatabase[req.params.id].UserID){
+        delete urlDatabase[req.params.id]
+        console.log(urlDatabase);
+        res.redirect("/urls");
+    } else {
+        res.sendStatus = 403;
+        res.redirect("/urls");
+    }
+        
 });
 
 app.get("/login", (req, res) => {

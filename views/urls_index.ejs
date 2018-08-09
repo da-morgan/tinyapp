@@ -7,17 +7,17 @@
 
 <body>
     <ul>
-        <% for(url in urls){ %>
+        <% for(key in urls){ %>
             <li>
                 <form method="POST">
-                <%= url %>: <%= urls[url] %>  
-                <input type="submit" value = "Delete" formaction="/urls/<%= url %>/delete">
-                <input type = "submit" value = "Edit" formaction="/urls/<%= url %>">
+                <%= key %>: <%= urls[key].LongURL %>
+                <input type="submit" value = "Delete" formaction="/urls/<%= key %>/delete">
+                <input type = "submit" value = "Edit" formaction="/urls/<%= key %>">
                 </form>
             </li>
         <% } %>
     </ul>
-    <a href="/urls/new">Shorten A URL</a></href>
+    <button><a href="/urls/new">Shorten A URL</a></href></button>
 </body>
 
 </html>
