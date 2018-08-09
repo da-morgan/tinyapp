@@ -1,1 +1,14 @@
 <h1>Welcome to TinyApp</h1>
+
+<h3>  
+    <form method="POST"> 
+        <% if(username) { %>
+            Welcome, <%= username %> 
+            <input type = "submit" value = "logout" formaction="/logout">
+        <% } else { %>
+            Login: 
+            <input type = "text" name = "username">
+            <input type = "submit" value = "login" formaction="/login">
+        <% } %>
+    </form>
+</h3>
