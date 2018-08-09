@@ -20,10 +20,23 @@ function generateRandomString(length) {
 }
 
 //database of URLs
-var urlDatabase = {
+const urlDatabase = {
     "b2xVn2": "http://www.lighthouselabs.ca",
     "9sm5xK": "http://www.google.com",
 }
+
+const users = { 
+    "123": {
+      id: "123", 
+      email: "user@example.com", 
+      password: "purple-monkey-dinosaur"
+    },
+   "456": {
+      id: "456", 
+      email: "user2@example.com", 
+      password: "dishwasher-funk"
+    }
+  }
 
 /* prints Database of URLs in the browser as JSON object. */
 app.get("/urls.json", (req, res) => {
@@ -117,7 +130,7 @@ app.post("/logout", (req, res) => {
    res.clearCookie('username');
    res.redirect(`http://localhost:8080/urls`);
 })
-
+/* Shows the register page when url is enters */
 app.get("/register", (req, res) => {
     let templateVars = {
         username: req.cookies["username"]
@@ -125,10 +138,24 @@ app.get("/register", (req, res) => {
     res.render('register', templateVars);
 });
 
+/* Saves data when user enters email and password
+   Adds user to the users database
+   Creates a cookie assigned to the userID */
 app.post("/register", (req, res) => {
     let em = req.body.email;
     let pw = req.body.password;
+    let newId = generateRandomString(7);
 
+    console.log("newID: " + newId);
+    const newObj = {
+        "id": newId,
+        "email": em,
+        "password": pw
+    }
+
+    users[newId] = newObj;
+    console.log(users);
+    res.cookie("id", newId);
     res.redirect("/urls");
 });
 
