@@ -41,7 +41,8 @@ app.get("/urls", (req, res) => {
 
 /* Takes user to the form to input a domain */
 app.get("/urls/new", (req, res) => {
-    res.render("urls_new");
+    let templateVars ={username: req.cookies["username"]};
+    res.render("urls_new", templateVars);
 });
 
 /* Displays info about long and short URLS given
