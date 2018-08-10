@@ -7,6 +7,7 @@
 
 <body>
     <% if(cookie) { %>
+        <h2>Your URLs: </h2>
         <ul>
             <% for(key in urls){ %>
                 <li>
@@ -21,7 +22,7 @@
         <button><a href="/urls/new">Shorten A URL</a></href></button>
     <% } else { %>
         <h3>
-            Login to see your Tiny urls: <button><a href = "/login">Login</a></button>
+            Login to see your Tiny URLs: <button><a href = "/login">Login</a></button>
             <br>
             Or register to get started now: <button><a href = "/register">Register</a></button>
         </h3>

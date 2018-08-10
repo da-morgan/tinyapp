@@ -1,13 +1,19 @@
 const express = require('express');
 const bodyParser = require("body-parser");
-const cookieParser = require('cookie-parser')
+var cookieSession = require('cookie-session');
 const bcrypt = require('bcrypt');
 
 const app = express();
-app.use(cookieParser());
-app.use(bodyParser.urlencoded({extended: true}));
 const PORT = 8080;
 
+app.use(cookieSession({
+    name: 'session',
+    keys: ["ben", "jamie", "dave", "jotham"],
+  
+    // Cookie Options
+    maxAge: 24 * 60 * 60 * 1000 // 24 hours
+  }))
+app.use(bodyParser.urlencoded({extended: true}));
 app.set("view engine", "ejs");
 
 //Generates a random string given a length input when function is called.
@@ -19,6 +25,7 @@ function generateRandomString(length) {
       }
     return result;
 }
+
 /* searches an object for values attached to anonymous keys.
    takes in an object, the value being searched for and the 
    value the user is passing in. */
@@ -38,16 +45,17 @@ function objectSearcher(object, objValue, userValue){
 /* given an email and password, returns the 
    UserID attached to those credentials. */
 function idGrabber(object, em, pw){
-    let id;
+    let id = false;
     var arr = Object.keys(object);
     console.log("arr: " + arr); 
     for(var i = 0; i < arr.length; i++){
-      if(object[arr[i]].email === em && object[arr[i]].password === bcrypt.hashSync(pw)){
+      if(object[arr[i]].email === em && bcrypt.compareSync(pw, object[arr[i]].password)){
         id = arr[i];
       }
     }
     return id; 
 }
+
 /* Recreates URL database but only includes URLs
    the user is allowed to see.*/
 function urlsForUser(id){
@@ -75,6 +83,7 @@ const urlDatabase = {
     }
 }
 
+//Database of users
 const users = { 
     "123": {
       id: "123", 
@@ -88,31 +97,26 @@ const users = {
     }
 }
 
-/* prints Database of URLs in the browser as JSON object. */
-app.get("/urls.json", (req, res) => {
-    res.json(urlDatabase);
-});
-
 /* Displays list of URLs currently in the urlDatabase object. */
 app.get("/urls", (req, res) => {
-    let userURLs = urlsForUser(req.cookies["user_id"]);
+    let userURLs = urlsForUser(req.session.user_id);
 
     let templateVars = {
         urls: userURLs,
         users: users,
-        cookie: req.cookies["user_id"]
+        cookie: req.session.user_id
     };
     res.render("urls_index", templateVars);
 })
 
-/* Takes user to the form to input a domain */
+// Takes user to the form to input a domain 
 app.get("/urls/new", (req, res) => {
     let templateVars ={
         users: users,
-        cookie: req.cookies["user_id"]
+        cookie: req.session.user_id
     };
 
-    if(req.cookies["user_id"]){
+    if(req.session.user_id){
         res.render("urls_new", templateVars);
     } else {
         res.redirect("/login");
@@ -122,12 +126,12 @@ app.get("/urls/new", (req, res) => {
 /* Displays info about long and short URLS given
    input of short URL.*/
 app.get("/urls/:id", (req, res) => {
-    if(req.cookies["user_id"] === urlDatabase[req.params.id].UserID){
+    if(req.session.user_id === urlDatabase[req.params.id].UserID){
         let templateVars = {
             shortURLS: req.params.id,
             longURLS: urlDatabase[req.params.id].LongURL,
             users: users,
-            cookie: req.cookies["user_id"]
+            cookie: req.session.user_id
         };
         res.render("urls_show", templateVars);
     } else {
@@ -135,7 +139,6 @@ app.get("/urls/:id", (req, res) => {
         res.redirect("/urls");
     }
 });
-
 
 /* user can input /u/<shortURL> and it directs them to 
    the website it refers to in the local object of URL databases" */
@@ -155,7 +158,7 @@ app.post("/urls", (req, res) => {
     urlDatabase[generated] = {
         ShortURL: generated,
         LongURL: req.body.longURL,
-        UserID: req.cookies["user_id"]
+        UserID: req.session.user_id
     }
 
     res.statusCode = 303
@@ -172,14 +175,14 @@ app.post("/urls/:id", (req,res) => {
 /* Updates the long url assigned to a short URL 
    Redirects user to the urls page*/
 app.post("/urls/:id/update", (req, res) => {
-    urlDatabase[req.params.id] = req.body.LongURL;
+    urlDatabase[req.params.id].LongURL = req.body.LongURL;
     res.redirect(`/urls`);
 });
 
 /* When delete button is pushed in the browser
    removes the link from the urlDB object and updates HTML`*/
 app.post("/urls/:id/delete", (req, res) => {
-    if(req.cookies["user_id"] === urlDatabase[req.params.id].UserID){
+    if(req.session.user_id === urlDatabase[req.params.id].UserID){
         delete urlDatabase[req.params.id]
         console.log(urlDatabase);
         res.redirect("/urls");
@@ -190,22 +193,24 @@ app.post("/urls/:id/delete", (req, res) => {
         
 });
 
+/* Takes users to the login page */
 app.get("/login", (req, res) => {
     let templateVars = {
         users: users,
-        cookie: req.cookies["user_id"]
+        cookie: req.session.user_id
     };
     res.render('login', templateVars);
 });
 
-/* Assigns a cookie to a userID when credentials are entered */
+/* Assigns a cookie to a userID when 
+   credentials are entered */
 app.post("/login", (req, res) => {
     let em = req.body.email;
     let pw = req.body.password;
     let id = idGrabber(users, em, pw);
-
+    console.log(id);
     if(id){
-        res.cookie("user_id", id);
+        req.session.user_id = id;
         res.redirect("/urls");
     } else {
         res.sendStatus = 403;
@@ -216,7 +221,7 @@ app.post("/login", (req, res) => {
 /* Deletes cookie when logout button pushed
    Redirects user to the urls page */
 app.post("/logout", (req, res) => {
-   res.clearCookie("user_id");
+   delete req.session.user_id;
    res.redirect("/urls");
 })
 
@@ -224,7 +229,7 @@ app.post("/logout", (req, res) => {
 app.get("/register", (req, res) => {
     let templateVars = {
         users: users,
-        cookie: req.cookies["user_id"]
+        cookie: req.session.user_id
     };
     res.render('register', templateVars);
 });
@@ -232,6 +237,7 @@ app.get("/register", (req, res) => {
 /* Saves data when user enters email and password
    Adds user to the users database
    Creates a cookie assigned to the userID */
+
 app.post("/register", (req, res) => {
     let em = req.body.email;
     let pw = req.body.password;
@@ -244,7 +250,7 @@ app.post("/register", (req, res) => {
     }
     if(objectSearcher(users, "email", em)){
         res.sendStatus = 400;
-        res.redirect("/register");
+        res.redirect("/login");
     }
 
 
@@ -257,18 +263,13 @@ app.post("/register", (req, res) => {
 
     users[newId] = newObj;
     console.log(users);
-    res.cookie("user_id", newId);
+    req.session.user_id = newId;
     res.redirect("/urls");
 });
 
-//prints HTML when you type /hello
-app.get("/hello", (req, res) => {
-    res.end("<html><body>Hello <b>World</b></body></html>\n");
-});
-
-//prints Hello! when user visits the root page.
+//redirects / to the /urls page.
 app.get("/", (req, res) => {
-    res.end("Hello!");
+    res.redirect("/urls");
 });
 
 //Listens on port provided at the top of the file.

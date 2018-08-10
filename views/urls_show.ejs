@@ -13,11 +13,14 @@
      <h3>
          <br>
         <form method="POST" action="/urls/<%= shortURLS %>/update">
-        Update to another long URL: 
+        Make "<%= shortURLS %>" go to a different website: 
         <input type ="text" name="LongURL">
         <input type="submit" name="Update" value = "Update">
         </form>
+        <br>
+        Take me back to my URLs! <button><a href = "/urls">Let's go!</a></button>
     </h3>
+
 </body>
 
 </html>
