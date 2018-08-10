@@ -6,8 +6,12 @@
 </head>
 
 <body>
-     <h2>Short URL: <%= shortURLS %></h2>
+     <h2>
+         Short URL: <%= shortURLS %><br>
+         Long URL: <%= longURLS %>
+    </h2>
      <h3>
+         <br>
         <form method="POST" action="/urls/<%= shortURLS %>/update">
         Update to another long URL: 
         <input type ="text" name="LongURL">

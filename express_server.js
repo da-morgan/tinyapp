@@ -1,11 +1,12 @@
 const express = require('express');
 const bodyParser = require("body-parser");
-var cookieParser = require('cookie-parser')
+const cookieParser = require('cookie-parser')
+const bcrypt = require('bcrypt');
 
-var app = express();
+const app = express();
 app.use(cookieParser());
 app.use(bodyParser.urlencoded({extended: true}));
-var PORT = 8080;
+const PORT = 8080;
 
 app.set("view engine", "ejs");
 
@@ -41,7 +42,7 @@ function idGrabber(object, em, pw){
     var arr = Object.keys(object);
     console.log("arr: " + arr); 
     for(var i = 0; i < arr.length; i++){
-      if(object[arr[i]].email === em && object[arr[i]].password === pw){
+      if(object[arr[i]].email === em && object[arr[i]].password === bcrypt.hashSync(pw)){
         id = arr[i];
       }
     }
@@ -78,12 +79,12 @@ const users = {
     "123": {
       id: "123", 
       email: "user@example.com", 
-      password: "purple-monkey-dinosaur"
+      password: "$2b$10$dpLrlpXStPbC.NwVZnUa5ursefNwl9zm9g8Vazo1kH379qyzJBpYq"
     },
    "456": {
       id: "456",  
       email: "user2@example.com", 
-      password: "dishwasher-funk"
+      password: "$2b$10$SfIQS9txYgurxmjafcTycue5jthH4rJiBQY0db8Q2vJbncpf5Pa5u"
     }
 }
 
@@ -124,7 +125,7 @@ app.get("/urls/:id", (req, res) => {
     if(req.cookies["user_id"] === urlDatabase[req.params.id].UserID){
         let templateVars = {
             shortURLS: req.params.id,
-            longURLS: urlDatabase[req.params.id],
+            longURLS: urlDatabase[req.params.id].LongURL,
             users: users,
             cookie: req.cookies["user_id"]
         };
@@ -150,11 +151,13 @@ app.get("/u/:shortURL", (req, res) => {
    domain and the newly generated string URL.*/
 app.post("/urls", (req, res) => {
     let generated = generateRandomString(6);
-    //console.log(req.body);  // debug statement to see POST parameters
-    urlDatabase[generated] = req.body.longURL;
-    //console.log('string: ' + generated);
-    //console.log(urlDatabase);
-    //console.log('req.body.longURL: ' + req.body.longURL);
+
+    urlDatabase[generated] = {
+        ShortURL: generated,
+        LongURL: req.body.longURL,
+        UserID: req.cookies["user_id"]
+    }
+
     res.statusCode = 303
     res.redirect(`/urls/${generated}`);
 });
@@ -233,6 +236,7 @@ app.post("/register", (req, res) => {
     let em = req.body.email;
     let pw = req.body.password;
     let newId = generateRandomString(7);
+    let hashPw = bcrypt.hashSync(pw, 10);
 
     if(em === ''){
         res.sendStatus = 400;
@@ -248,12 +252,12 @@ app.post("/register", (req, res) => {
     const newObj = {
         "id": newId,
         "email": em,
-        "password": pw
+        "password": hashPw
     }
 
     users[newId] = newObj;
     console.log(users);
-    req.cookie("user_id", newId);
+    res.cookie("user_id", newId);
     res.redirect("/urls");
 });
 
