@@ -2,6 +2,7 @@ const express = require('express');
 const bodyParser = require("body-parser");
 var cookieSession = require('cookie-session');
 const bcrypt = require('bcrypt');
+const functions = require('./helper-functions');
 
 const app = express();
 const PORT = 8080;
@@ -15,59 +16,6 @@ app.use(cookieSession({
   }))
 app.use(bodyParser.urlencoded({extended: true}));
 app.set("view engine", "ejs");
-
-//Generates a random string given a length input when function is called.
-function generateRandomString(length) {
-    var options = 'abcdefghijklmnopqrstuvwxyz0123456789';
-    var result = '';
-      for (var i = 0; i < length; i++){
-        result += options[Math.floor(Math.random() * options.length)];
-      }
-    return result;
-}
-
-/* searches an object for values attached to anonymous keys.
-   takes in an object, the value being searched for and the 
-   value the user is passing in. */
-function objectSearcher(object, objValue, userValue){
-    let valueChecker = false;
-    var arr = Object.keys(object);
-    console.log("arr: " + arr);
-    console.log("user value: " + userValue); 
-    for(var i = 0; i < arr.length; i++){
-      if(object[arr[i]][objValue] === userValue){
-        valueChecker = true;
-      }
-    }
-    return valueChecker;
-}
-
-/* given an email and password, returns the 
-   UserID attached to those credentials. */
-function idGrabber(object, em, pw){
-    let id = false;
-    var arr = Object.keys(object);
-    console.log("arr: " + arr); 
-    for(var i = 0; i < arr.length; i++){
-      if(object[arr[i]].email === em && bcrypt.compareSync(pw, object[arr[i]].password)){
-        id = arr[i];
-      }
-    }
-    return id; 
-}
-
-/* Recreates URL database but only includes URLs
-   the user is allowed to see.*/
-function urlsForUser(id){
-    let returnObj = {}
-    let object; 
-    for(var key in urlDatabase){
-      if(id === urlDatabase[key].UserID) {
-        returnObj[key] = urlDatabase[key]
-      }
-    }
-    return returnObj;
-}
 
 //database of URLs
 const urlDatabase = {
