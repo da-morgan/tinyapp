@@ -139,7 +139,7 @@ app.get("/urls/:id", (req, res) => {
 /* user can input /u/<shortURL> and it directs them to 
    the website it refers to in the local object of URL databases" */
 app.get("/u/:shortURL", (req, res) => {
-    let longURL = urlDatabase[req.params.shortURL];
+    let longURL = urlDatabase[req.params.shortURL].LongURL;
     console.log(urlDatabase[req.params.shortURL]);
     res.statusCode = 301;
     res.redirect(longURL);
