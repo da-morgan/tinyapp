@@ -104,7 +104,7 @@ app.get("/urls", (req, res) => {
     let templateVars = {
         urls: userURLs,
         users: users,
-        cookie: req.session.user_id
+        cookie: users[req.session.user_id]
     };
     res.render("urls_index", templateVars);
 })
@@ -113,7 +113,7 @@ app.get("/urls", (req, res) => {
 app.get("/urls/new", (req, res) => {
     let templateVars ={
         users: users,
-        cookie: req.session.user_id
+        cookie: users[req.session.user_id]
     };
 
     if(req.session.user_id){
@@ -131,7 +131,7 @@ app.get("/urls/:id", (req, res) => {
             shortURLS: req.params.id,
             longURLS: urlDatabase[req.params.id].LongURL,
             users: users,
-            cookie: req.session.user_id
+            cookie: users[req.session.user_id]
         };
         res.render("urls_show", templateVars);
     } else {
@@ -197,7 +197,7 @@ app.post("/urls/:id/delete", (req, res) => {
 app.get("/login", (req, res) => {
     let templateVars = {
         users: users,
-        cookie: req.session.user_id
+        cookie: users[req.session.user_id]
     };
     res.render('login', templateVars);
 });
@@ -208,7 +208,7 @@ app.post("/login", (req, res) => {
     let em = req.body.email;
     let pw = req.body.password;
     let id = idGrabber(users, em, pw);
-    console.log(id);
+
     if(id){
         req.session.user_id = id;
         res.redirect("/urls");
@@ -221,7 +221,7 @@ app.post("/login", (req, res) => {
 /* Deletes cookie when logout button pushed
    Redirects user to the urls page */
 app.post("/logout", (req, res) => {
-   delete req.session.user_id;
+   req.session = null;
    res.redirect("/urls");
 })
 
@@ -229,7 +229,7 @@ app.post("/logout", (req, res) => {
 app.get("/register", (req, res) => {
     let templateVars = {
         users: users,
-        cookie: req.session.user_id
+        cookie: users[req.session.user_id]
     };
     res.render('register', templateVars);
 });
