@@ -208,14 +208,15 @@ app.post("/login", (req, res) => {
     let em = req.body.email;
     let pw = req.body.password;
     let id = idGrabber(users, em, pw);
+    console.log("id: " + id);
 
     if(id){
         req.session.user_id = id;
         res.redirect("/urls");
     } else {
         res.sendStatus = 403;
-        res.redirect("/login");
-    }   
+        res.redirect("/invalid-credentials");
+    }
 })
 
 /* Deletes cookie when logout button pushed
@@ -227,6 +228,7 @@ app.post("/logout", (req, res) => {
 
 /* Shows the register page when url is enters */
 app.get("/register", (req, res) => {
+    console.log("stuffs", req.session);
     let templateVars = {
         users: users,
         cookie: users[req.session.user_id]
@@ -239,37 +241,68 @@ app.get("/register", (req, res) => {
    Creates a cookie assigned to the userID */
 
 app.post("/register", (req, res) => {
-    let em = req.body.email;
-    let pw = req.body.password;
-    let newId = generateRandomString(7);
-    let hashPw = bcrypt.hashSync(pw, 10);
+    const em = req.body.email;
+    const pw = req.body.password;
 
-    if(em === ''){
+    if (!em && !pw) {
+        console.log("p1");
         res.sendStatus = 400;
-        res.redirect("/register");
-    }
-    if(objectSearcher(users, "email", em)){
+        //req.session.errMessage = "We need a valid Email and Password!"
+        res.redirect("/invalid-credentials");
+        return;
+    } else if (!em) {
+        console.log("p2");
         res.sendStatus = 400;
-        res.redirect("/login");
+        //req.session.errMessage = "Please enter an Email address"
+        res.redirect("/invalid-credentials");
+        return;
+    } else if (!pw) {
+        console.log("p3");
+        res.sendStatus = 400;
+        //req.session.errMessage = "Please enter a password"
+        res.redirect("/invalid-credentials");
+        return;
+    } else if (objectSearcher(users, "email", em)) {
+        console.log("p4");
+        res.sendStatus = 400;
+        //req.session.errMessage = "Please Log in"
+        res.redirect("/invalid-credentials");
+        return;
+    } else {
+
+        const newId = generateRandomString(7);
+        const hashPw = bcrypt.hashSync(pw, 10);
+
+        const newObj = {
+            "id": newId,
+            "email": em,
+            "password": hashPw
+        }
+
+        users[newId] = newObj;
+        console.log(users);
+        req.session.user_id = newId;
+        res.redirect("/urls");
     }
+});
 
-
-    console.log("newID: " + newId);
-    const newObj = {
-        "id": newId,
-        "email": em,
-        "password": hashPw
-    }
-
-    users[newId] = newObj;
-    console.log(users);
-    req.session.user_id = newId;
-    res.redirect("/urls");
+app.get("/invalid-credentials", (req, res) => {
+    console.log("stuffs", req.session);
+    let templateVars = {
+        users: users,
+        cookie: users[req.session.user_id]
+    };
+    res.render('invalid-credentials', templateVars);
 });
 
 //redirects / to the /urls page.
 app.get("/", (req, res) => {
-    res.redirect("/urls");
+    if (req.session.user_id){
+        res.redirect("/urls");
+    } else {
+        res.redirect("/login");
+    }
+    
 });
 
 //Listens on port provided at the top of the file.
