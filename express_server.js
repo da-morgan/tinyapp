@@ -47,6 +47,18 @@ function idGrabber(object, em, pw){
     }
     return id; 
 }
+/* Recreates URL database but only includes URLs
+   the user is allowed to see.*/
+function urlsForUser(id){
+    let returnObj = {}
+    let object; 
+    for(var key in urlDatabase){
+      if(id === urlDatabase[key].UserID) {
+        returnObj[key] = urlDatabase[key]
+      }
+    }
+    return returnObj;
+}
 
 //database of URLs
 const urlDatabase = {
@@ -82,8 +94,10 @@ app.get("/urls.json", (req, res) => {
 
 /* Displays list of URLs currently in the urlDatabase object. */
 app.get("/urls", (req, res) => {
+    let userURLs = urlsForUser(req.cookies["user_id"]);
+
     let templateVars = {
-        urls: urlDatabase,
+        urls: userURLs,
         users: users,
         cookie: req.cookies["user_id"]
     };
@@ -119,7 +133,7 @@ app.get("/urls/:id", (req, res) => {
         res.sendStatus = 403;
         res.redirect("/urls");
     }
-})
+});
 
 
 /* user can input /u/<shortURL> and it directs them to 
@@ -129,7 +143,7 @@ app.get("/u/:shortURL", (req, res) => {
     console.log(urlDatabase[req.params.shortURL]);
     res.statusCode = 301;
     res.redirect(longURL);
-  });
+});
 
 /* Given a domain input from /urls/new, generates a short url string 
    and redirects the user to the urls/new page. Displays the original
@@ -193,10 +207,7 @@ app.post("/login", (req, res) => {
     } else {
         res.sendStatus = 403;
         res.redirect("/login");
-    }
-
-    
-    
+    }   
 })
 
 /* Deletes cookie when logout button pushed
@@ -205,6 +216,7 @@ app.post("/logout", (req, res) => {
    res.clearCookie("user_id");
    res.redirect("/urls");
 })
+
 /* Shows the register page when url is enters */
 app.get("/register", (req, res) => {
     let templateVars = {

@@ -6,18 +6,26 @@
 </head>
 
 <body>
-    <ul>
-        <% for(key in urls){ %>
-            <li>
-                <form method="POST">
-                <%= key %>: <%= urls[key].LongURL %>
-                <input type="submit" value = "Delete" formaction="/urls/<%= key %>/delete">
-                <input type = "submit" value = "Edit" formaction="/urls/<%= key %>">
-                </form>
-            </li>
-        <% } %>
-    </ul>
-    <button><a href="/urls/new">Shorten A URL</a></href></button>
+    <% if(cookie) { %>
+        <ul>
+            <% for(key in urls){ %>
+                <li>
+                    <form method="POST">
+                    <%= key %>: <%= urls[key].LongURL %>
+                    <input type="submit" value = "Delete" formaction="/urls/<%= key %>/delete">
+                    <input type = "submit" value = "Edit" formaction="/urls/<%= key %>">
+                    </form>
+                </li>
+            <% } %>
+        </ul>
+        <button><a href="/urls/new">Shorten A URL</a></href></button>
+    <% } else { %>
+        <h3>
+            Login to see your Tiny urls: <button><a href = "/login">Login</a></button>
+            <br>
+            Or register to get started now: <button><a href = "/register">Register</a></button>
+        </h3>
+    <% } %>
 </body>
 
 </html>

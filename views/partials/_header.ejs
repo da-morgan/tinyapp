@@ -2,7 +2,9 @@
 
 <h3>  
         <% if(cookie) { %>
-            <button><a href = "/logout">Logout</a></button>
+            <form action = "/logout" method = "POST">
+                <input type = "submit" value = "Logout">
+            </form>
         <% } else { %>
             <button><a href = "/login">Login</a></button>
             <button><a href = "/register">Register</a></button>
