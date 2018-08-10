@@ -4,18 +4,15 @@
 <head>
     <% include partials/_header %>
 </head>
-
 <body>
      <h2>
          Short URL: <%= shortURLS %><br>
-         Long URL: <%= longURLS %>
     </h2>
      <h3>
-         <br>
         <form method="POST" action="/urls/<%= shortURLS %>/update">
-        Make "<%= shortURLS %>" go to a different website: 
-        <input type ="text" name="LongURL">
-        <input type="submit" name="Update" value = "Update">
+            Make "<%= shortURLS %>" go to a different website: 
+            <input type ="text" name="LongURL" value = <%= longURLS %>>
+            <input type="submit" name="Update" value = "Update">
         </form>
         <br>
         Take me back to my URLs! <button><a href = "/urls">Let's go!</a></button>

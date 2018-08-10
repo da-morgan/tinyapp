@@ -32,8 +32,7 @@ function generateRandomString(length) {
 function objectSearcher(object, objValue, userValue){
     let valueChecker = false;
     var arr = Object.keys(object);
-    console.log("arr: " + arr);
-    console.log("user value: " + userValue); 
+
     for(var i = 0; i < arr.length; i++){
       if(object[arr[i]][objValue] === userValue){
         valueChecker = true;
@@ -94,6 +93,11 @@ const users = {
       id: "456",  
       email: "user2@example.com", 
       password: "$2b$10$SfIQS9txYgurxmjafcTycue5jthH4rJiBQY0db8Q2vJbncpf5Pa5u"
+    },
+   "ypwu9er": {
+      id: "ypwu9er",
+      email: "david@david.com",
+      password: "$2b$10$eOSk1sn9.8WczY/Yefi/jOs41LvO5WlywTRGhOWs3LCtogFSk4mke"
     }
 }
 
@@ -126,7 +130,7 @@ app.get("/urls/new", (req, res) => {
 /* Displays info about long and short URLS given
    input of short URL.*/
 app.get("/urls/:id", (req, res) => {
-    if(req.session.user_id === urlDatabase[req.params.id].UserID){
+    if(urlDatabase[req.params.id] && req.session.user_id === urlDatabase[req.params.id].UserID){
         let templateVars = {
             shortURLS: req.params.id,
             longURLS: urlDatabase[req.params.id].LongURL,
@@ -136,8 +140,23 @@ app.get("/urls/:id", (req, res) => {
         res.render("urls_show", templateVars);
     } else {
         res.sendStatus = 403;
-        res.redirect("/urls");
+        res.render("resource-not-found");
     }
+});
+
+app.get("/resource-not-found", (req, res) => {
+    let templateVars = {
+        users: users,
+        cookie: users[req.session.user_id]
+    };
+    res.render("resource-not-found", templateVars);
+})
+
+/* Redirects user to the short URLs page when they click
+   the edit button on /urls.*/
+   app.post("/urls/:id", (req,res) => {
+    let short = req.params.id;
+    res.redirect(`/urls/${short}`);
 });
 
 /* user can input /u/<shortURL> and it directs them to 
@@ -165,11 +184,12 @@ app.post("/urls", (req, res) => {
     res.redirect(`/urls/${generated}`);
 });
 
-/* Redirects user to the short URLs page when they click
-   the edit button on /urls.*/
-app.post("/urls/:id", (req,res) => {
-    let short = req.params.id;
-    res.redirect(`/urls/${short}`);
+app.get("/invalid-credentials", (req, res) => {
+    let templateVars = {
+        users: users,
+        cookie: users[req.session.user_id]
+    };
+    res.render('invalid-credentials', templateVars);
 });
 
 /* Updates the long url assigned to a short URL 
@@ -287,7 +307,6 @@ app.post("/register", (req, res) => {
 });
 
 app.get("/invalid-credentials", (req, res) => {
-    console.log("stuffs", req.session);
     let templateVars = {
         users: users,
         cookie: users[req.session.user_id]

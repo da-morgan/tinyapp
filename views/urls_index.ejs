@@ -8,17 +8,19 @@
 <body>
     <% if(cookie) { %>
         <h2>Your URLs: </h2>
+        <h3>
         <ul>
             <% for(key in urls){ %>
                 <li>
                     <form method="POST">
-                    <%= key %>: <%= urls[key].LongURL %>
+                    Original domain: <%= urls[key].LongURL %> <br> Short URL: <%= key %>
                     <input type="submit" value = "Delete" formaction="/urls/<%= key %>/delete">
                     <input type = "submit" value = "Edit" formaction="/urls/<%= key %>">
                     </form>
                 </li>
             <% } %>
         </ul>
+        </h3>
         <button><a href="/urls/new">Shorten A URL</a></href></button>
     <% } else { %>
         <h3>
