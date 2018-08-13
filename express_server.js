@@ -144,7 +144,7 @@ app.get("/register", (req, res) => {
         users: users,
         cookie: users[req.session.user_id]
     };
-    res.render('register', templateVars);
+    res.render("register", templateVars);
 });
 
 /* Saves data when user enters email and password
@@ -212,17 +212,27 @@ app.get("/urls", (req, res) => {
 /* Given a domain input from /urls/new, generates a short url string 
    and redirects the user to the urls/new page. Displays the original
    domain and the newly generated string URL.*/
-   app.post("/urls", (req, res) => {
-    let generated = generateRandomString(6);
+   app.post("/urls/", (req, res) => {
+    let userURL = req.body.longURL;
 
-    urlDatabase[generated] = {
-        ShortURL: generated,
-        LongURL: req.body.longURL,
-        UserID: req.session.user_id
-    }
+    if(userURL.startsWith("http://")){
+        let generated = generateRandomString(6);
 
-    res.statusCode = 303
-    res.redirect(`/urls/${generated}`);
+        urlDatabase[generated] = {
+            ShortURL: generated,
+            LongURL: req.body.longURL,
+            UserID: req.session.user_id
+        }
+
+        res.statusCode = 303
+        res.redirect(`/urls/${generated}`);
+    } else {
+        let templateVars ={
+            users: users,
+            cookie: users[req.session.user_id]
+        };
+        res.render("invalid-url", templateVars);
+    } 
 });
 
 // Takes user to the form to input a domain 
@@ -251,10 +261,10 @@ app.get("/urls/:id", (req, res) => {
         };
         res.render("urls_show", templateVars);
     } else {
-       res.sendStatus = 404;
-       const templateVars = {
-        cookie: users[req.session.user_id]
-       }
+        res.sendStatus = 404;
+        const templateVars = {
+            cookie: users[req.session.user_id]
+        }
         res.render("resource-not-found", templateVars);
     }
 });
@@ -269,8 +279,17 @@ app.post("/urls/:id", (req,res) => {
 /* Updates the long url assigned to a short URL 
    Redirects user to the urls page*/
    app.post("/urls/:id/update", (req, res) => {
-    urlDatabase[req.params.id].LongURL = req.body.LongURL;
-    res.render(`urls`);
+
+    if(req.body.LongURL.startsWith("http://")){    
+        urlDatabase[req.params.id].LongURL = req.body.LongURL;
+        res.redirect("/urls");
+   } else {
+        let templateVars ={
+            users: users,
+            cookie: users[req.session.user_id]
+        };
+        res.render("invalid-url", templateVars);
+   }
 });
 
 /* When delete button is pushed in the browser
@@ -302,12 +321,21 @@ app.get("/invalid-credentials", (req, res) => {
     res.render('invalid-credentials', templateVars);
 });
 
+app.get("/invalid-url", (req, res) => {
+    let templateVars = {
+        users: users,
+        cookie: users[req.session.user_id]
+    };
+    res.render('invalid-url', templateVars);
+});
+
 /* Deletes cookie when logout button pushed
    Redirects user to the urls page */
-app.post("/logout", (req, res) => {
-   req.session = null;
-   res.render("urls");
+   app.post("/logout", (req, res) => {
+    req.session = null;
+    res.redirect("/urls");
 })
+
 
 //Listens on port provided at the top of the file.
 app.listen(PORT, () => {
