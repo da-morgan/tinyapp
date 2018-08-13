@@ -32,8 +32,7 @@ function generateRandomString(length) {
 function objectSearcher(object, objValue, userValue){
     let valueChecker = false;
     var arr = Object.keys(object);
-    console.log("arr: " + arr);
-    console.log("user value: " + userValue); 
+
     for(var i = 0; i < arr.length; i++){
       if(object[arr[i]][objValue] === userValue){
         valueChecker = true;
@@ -94,103 +93,23 @@ const users = {
       id: "456",  
       email: "user2@example.com", 
       password: "$2b$10$SfIQS9txYgurxmjafcTycue5jthH4rJiBQY0db8Q2vJbncpf5Pa5u"
+    },
+   "ypwu9er": {
+      id: "ypwu9er",
+      email: "david@david.com",
+      password: "$2b$10$eOSk1sn9.8WczY/Yefi/jOs41LvO5WlywTRGhOWs3LCtogFSk4mke"
     }
 }
 
-/* Displays list of URLs currently in the urlDatabase object. */
-app.get("/urls", (req, res) => {
-    let userURLs = urlsForUser(req.session.user_id);
-
-    let templateVars = {
-        urls: userURLs,
-        users: users,
-        cookie: users[req.session.user_id]
-    };
-    res.render("urls_index", templateVars);
-})
-
-// Takes user to the form to input a domain 
-app.get("/urls/new", (req, res) => {
-    let templateVars ={
-        users: users,
-        cookie: users[req.session.user_id]
-    };
-
-    if(req.session.user_id){
-        res.render("urls_new", templateVars);
+//redirects / to the /urls or login page.
+app.get("/", (req, res) => {
+    if (req.session.user_id){
+        res.sendStatus = 301;
+        res.redirect("/urls");
     } else {
+        res.sendStatus = 301;
         res.redirect("/login");
     }
-});
-
-/* Displays info about long and short URLS given
-   input of short URL.*/
-app.get("/urls/:id", (req, res) => {
-    if(req.session.user_id === urlDatabase[req.params.id].UserID){
-        let templateVars = {
-            shortURLS: req.params.id,
-            longURLS: urlDatabase[req.params.id].LongURL,
-            users: users,
-            cookie: users[req.session.user_id]
-        };
-        res.render("urls_show", templateVars);
-    } else {
-        res.sendStatus = 403;
-        res.redirect("/urls");
-    }
-});
-
-/* user can input /u/<shortURL> and it directs them to 
-   the website it refers to in the local object of URL databases" */
-app.get("/u/:shortURL", (req, res) => {
-    let longURL = urlDatabase[req.params.shortURL].LongURL;
-    console.log(urlDatabase[req.params.shortURL]);
-    res.statusCode = 301;
-    res.redirect(longURL);
-});
-
-/* Given a domain input from /urls/new, generates a short url string 
-   and redirects the user to the urls/new page. Displays the original
-   domain and the newly generated string URL.*/
-app.post("/urls", (req, res) => {
-    let generated = generateRandomString(6);
-
-    urlDatabase[generated] = {
-        ShortURL: generated,
-        LongURL: req.body.longURL,
-        UserID: req.session.user_id
-    }
-
-    res.statusCode = 303
-    res.redirect(`/urls/${generated}`);
-});
-
-/* Redirects user to the short URLs page when they click
-   the edit button on /urls.*/
-app.post("/urls/:id", (req,res) => {
-    let short = req.params.id;
-    res.redirect(`/urls/${short}`);
-});
-
-/* Updates the long url assigned to a short URL 
-   Redirects user to the urls page*/
-app.post("/urls/:id/update", (req, res) => {
-    urlDatabase[req.params.id].LongURL = req.body.LongURL;
-    res.redirect(`/urls`);
-});
-
-/* When delete button is pushed in the browser
-   removes the link from the urlDB object and updates HTML`*/
-app.post("/urls/:id/delete", (req, res) => {
-    if(req.session.user_id === urlDatabase[req.params.id].UserID){
-        delete urlDatabase[req.params.id]
-        console.log(urlDatabase);
-        res.redirect("/urls");
-    } else {
-        res.sendStatus = 403;
-        res.redirect("/urls");
-    }
-        
 });
 
 /* Takes users to the login page */
@@ -217,23 +136,15 @@ app.post("/login", (req, res) => {
         res.sendStatus = 403;
         res.redirect("/invalid-credentials");
     }
-})
-
-/* Deletes cookie when logout button pushed
-   Redirects user to the urls page */
-app.post("/logout", (req, res) => {
-   req.session = null;
-   res.redirect("/urls");
-})
+});
 
 /* Shows the register page when url is enters */
 app.get("/register", (req, res) => {
-    console.log("stuffs", req.session);
     let templateVars = {
         users: users,
         cookie: users[req.session.user_id]
     };
-    res.render('register', templateVars);
+    res.render("register", templateVars);
 });
 
 /* Saves data when user enters email and password
@@ -248,25 +159,25 @@ app.post("/register", (req, res) => {
         console.log("p1");
         res.sendStatus = 400;
         //req.session.errMessage = "We need a valid Email and Password!"
-        res.redirect("/invalid-credentials");
+        res.render("invalid-credentials");
         return;
     } else if (!em) {
         console.log("p2");
         res.sendStatus = 400;
         //req.session.errMessage = "Please enter an Email address"
-        res.redirect("/invalid-credentials");
+        res.render("invalid-credentials");
         return;
     } else if (!pw) {
         console.log("p3");
         res.sendStatus = 400;
         //req.session.errMessage = "Please enter a password"
-        res.redirect("/invalid-credentials");
+        res.render("invalid-credentials");
         return;
     } else if (objectSearcher(users, "email", em)) {
         console.log("p4");
         res.sendStatus = 400;
         //req.session.errMessage = "Please Log in"
-        res.redirect("/invalid-credentials");
+        res.render("invalid-credentials");
         return;
     } else {
 
@@ -286,8 +197,123 @@ app.post("/register", (req, res) => {
     }
 });
 
+/* Displays list of URLs currently in the urlDatabase object. */
+app.get("/urls", (req, res) => {
+    let userURLs = urlsForUser(req.session.user_id);
+
+    let templateVars = {
+        urls: userURLs,
+        users: users,
+        cookie: users[req.session.user_id]
+    };
+    res.render("urls_index", templateVars);
+})
+
+/* Given a domain input from /urls/new, generates a short url string 
+   and redirects the user to the urls/new page. Displays the original
+   domain and the newly generated string URL.*/
+   app.post("/urls/", (req, res) => {
+    let userURL = req.body.longURL;
+
+    if(userURL.startsWith("http://")){
+        let generated = generateRandomString(6);
+
+        urlDatabase[generated] = {
+            ShortURL: generated,
+            LongURL: req.body.longURL,
+            UserID: req.session.user_id
+        }
+
+        res.statusCode = 303
+        res.redirect(`/urls/${generated}`);
+    } else {
+        let templateVars ={
+            users: users,
+            cookie: users[req.session.user_id]
+        };
+        res.render("invalid-url", templateVars);
+    } 
+});
+
+// Takes user to the form to input a domain 
+app.get("/urls/new", (req, res) => {
+    let templateVars ={
+        users: users,
+        cookie: users[req.session.user_id]
+    };
+
+    if(req.session.user_id){
+        res.render("urls_new", templateVars);
+    } else {
+        res.render("login");
+    }
+});
+
+/* Displays info about long and short URLS given
+   input of short URL.*/
+app.get("/urls/:id", (req, res) => {
+    if(urlDatabase[req.params.id] && req.session.user_id === urlDatabase[req.params.id].UserID){
+        let templateVars = {
+            shortURLS: req.params.id,
+            longURLS: urlDatabase[req.params.id].LongURL,
+            users: users,
+            cookie: users[req.session.user_id]
+        };
+        res.render("urls_show", templateVars);
+    } else {
+        res.sendStatus = 404;
+        const templateVars = {
+            cookie: users[req.session.user_id]
+        }
+        res.render("resource-not-found", templateVars);
+    }
+});
+
+/* Redirects user to the short URLs page when they click
+   the edit button on /urls.*/
+app.post("/urls/:id", (req,res) => {
+    let short = req.params.id;
+    res.redirect(`/urls/${short}`);
+});
+
+/* Updates the long url assigned to a short URL 
+   Redirects user to the urls page*/
+   app.post("/urls/:id/update", (req, res) => {
+
+    if(req.body.LongURL.startsWith("http://")){    
+        urlDatabase[req.params.id].LongURL = req.body.LongURL;
+        res.redirect("/urls");
+   } else {
+        let templateVars ={
+            users: users,
+            cookie: users[req.session.user_id]
+        };
+        res.render("invalid-url", templateVars);
+   }
+});
+
+/* When delete button is pushed in the browser
+   removes the link from the urlDB object and updates HTML`*/
+   app.post("/urls/:id/delete", (req, res) => {
+    if(req.session.user_id === urlDatabase[req.params.id].UserID){
+        delete urlDatabase[req.params.id]
+        console.log(urlDatabase);
+        res.render("urls");
+    } else {
+        res.sendStatus = 403;
+        res.render("urls");
+    }   
+});
+
+app.get("/resource-not-found", (req, res) => {
+    let templateVars = {
+        users: users,
+        cookie: users[req.session.user_id]
+    };
+    res.render('resource-not-found', templateVars);
+});
+
 app.get("/invalid-credentials", (req, res) => {
-    console.log("stuffs", req.session);
     let templateVars = {
         users: users,
         cookie: users[req.session.user_id]
@@ -295,15 +321,21 @@ app.get("/invalid-credentials", (req, res) => {
     res.render('invalid-credentials', templateVars);
 });
 
-//redirects / to the /urls page.
-app.get("/", (req, res) => {
-    if (req.session.user_id){
-        res.redirect("/urls");
-    } else {
-        res.redirect("/login");
-    }
-    
+app.get("/invalid-url", (req, res) => {
+    let templateVars = {
+        users: users,
+        cookie: users[req.session.user_id]
+    };
+    res.render('invalid-url', templateVars);
 });
+
+/* Deletes cookie when logout button pushed
+   Redirects user to the urls page */
+   app.post("/logout", (req, res) => {
+    req.session = null;
+    res.redirect("/urls");
+})
+
 
 //Listens on port provided at the top of the file.
 app.listen(PORT, () => {
