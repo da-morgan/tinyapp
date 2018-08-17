@@ -298,10 +298,10 @@ app.post("/urls/:id", (req,res) => {
     if(req.session.user_id === urlDatabase[req.params.id].UserID){
         delete urlDatabase[req.params.id]
         console.log(urlDatabase);
-        res.render("urls");
+        res.redirect("/urls");
     } else {
         res.sendStatus = 403;
-        res.render("urls");
+        res.redirect("/urls");
     }   
 });
 
