@@ -46,7 +46,6 @@ function objectSearcher(object, objValue, userValue){
 function idGrabber(object, em, pw){
     let id = false;
     var arr = Object.keys(object);
-    console.log("arr: " + arr); 
     for(var i = 0; i < arr.length; i++){
       if(object[arr[i]].email === em && bcrypt.compareSync(pw, object[arr[i]].password)){
         id = arr[i];
@@ -127,7 +126,6 @@ app.post("/login", (req, res) => {
     let em = req.body.email;
     let pw = req.body.password;
     let id = idGrabber(users, em, pw);
-    console.log("id: " + id);
 
     if(id){
         req.session.user_id = id;
@@ -138,7 +136,7 @@ app.post("/login", (req, res) => {
     }
 });
 
-/* Shows the register page when url is enters */
+/* Shows the register page when url is entered */
 app.get("/register", (req, res) => {
     let templateVars = {
         users: users,
@@ -152,48 +150,35 @@ app.get("/register", (req, res) => {
    Creates a cookie assigned to the userID */
 
 app.post("/register", (req, res) => {
-    const em = req.body.email;
-    const pw = req.body.password;
+    let email = req.body.email;
+    let password = req.body.password;
 
-    if (!em && !pw) {
-        console.log("p1");
-        res.sendStatus = 400;
-        //req.session.errMessage = "We need a valid Email and Password!"
-        res.render("invalid-credentials");
+    if (!email || !password) {
+        res.redirect("/invalid-credentials");
         return;
-    } else if (!em) {
-        console.log("p2");
-        res.sendStatus = 400;
-        //req.session.errMessage = "Please enter an Email address"
-        res.render("invalid-credentials");
-        return;
-    } else if (!pw) {
-        console.log("p3");
-        res.sendStatus = 400;
-        //req.session.errMessage = "Please enter a password"
-        res.render("invalid-credentials");
-        return;
-    } else if (objectSearcher(users, "email", em)) {
-        console.log("p4");
-        res.sendStatus = 400;
-        //req.session.errMessage = "Please Log in"
-        res.render("invalid-credentials");
+    } else if (objectSearcher(users, "email", email)) {
+        res.redirect("/invalid-credentials");
         return;
     } else {
 
-        const newId = generateRandomString(7);
-        const hashPw = bcrypt.hashSync(pw, 10);
+        let newId = generateRandomString(7);
+        let hashPw = bcrypt.hashSync(password, 10);
 
-        const newObj = {
+        let newObj = {
             "id": newId,
-            "email": em,
+            "email": email,
             "password": hashPw
         }
 
         users[newId] = newObj;
-        console.log(users);
         req.session.user_id = newId;
-        res.redirect("/urls");
+
+        let templateVars = {
+            users: users,
+            cookie: users[req.session.user_id]
+        };
+
+        res.render("urls_index", templateVars);
     }
 });
 
@@ -292,12 +277,19 @@ app.post("/urls/:id", (req,res) => {
    }
 });
 
+/* user can input /u/<shortURL> and it directs them to 
+   the website it refers to in the local object of URL databases" */
+app.get("/u/:shortURL", (req, res) => {
+    let longURL = urlDatabase[req.params.shortURL].LongURL;
+    res.statusCode = 301;
+    res.redirect(longURL);
+});
+
 /* When delete button is pushed in the browser
    removes the link from the urlDB object and updates HTML`*/
    app.post("/urls/:id/delete", (req, res) => {
     if(req.session.user_id === urlDatabase[req.params.id].UserID){
         delete urlDatabase[req.params.id]
-        console.log(urlDatabase);
         res.redirect("/urls");
     } else {
         res.sendStatus = 403;
