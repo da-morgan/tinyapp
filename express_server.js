@@ -178,7 +178,7 @@ app.post("/register", (req, res) => {
             cookie: users[req.session.user_id]
         };
 
-        res.render("urls_index", templateVars);
+        res.redirect("/urls");
     }
 });
 
